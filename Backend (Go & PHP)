@@ -1,0 +1,35 @@
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "net/http"
+)
+
+type Post struct {
+    ID    int    `json:"id"`
+    Title string `json:"title"`
+    Body  string `json:"body"`
+}
+
+var posts []Post
+
+func main() {
+    http.HandleFunc("/posts", getPosts)
+    http.HandleFunc("/posts/create", createPost)
+    fmt.Println("Server running on port 8080")
+    http.ListenAndServe(":8080", nil)
+}
+
+func getPosts(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(posts)
+}
+
+func createPost(w http.ResponseWriter, r *http.Request) {
+    var newPost Post
+    json.NewDecoder(r.Body).Decode(&newPost)
+    posts = append(posts, newPost)
+    w.WriteHeader(http.StatusCreated)
+    json.NewEncoder(w).Encode(newPost)
+}
